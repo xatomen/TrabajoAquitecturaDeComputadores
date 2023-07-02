@@ -3,14 +3,12 @@
 
 using namespace std;
 
-int regar(){
-    // srand(time(NULL));
-    int regado = rand() % 50 + 30;
+int regar(int variable1){
+    int regado = rand() % 40 + 30;
     return regado;
 }
 
-int deshidratacion(){
-    // srand(time(NULL));
+int deshidratacion(int variable1, int variable2){
     int sequedad = rand() % 10 + 10;
     return sequedad;
 }
@@ -18,14 +16,17 @@ int deshidratacion(){
 int main(){
 
     /*Semilla generada en base al tiempo*/
-    // srand(time(NULL));
+    srand(time(NULL));
+
+    int variable1;
+    int variable2;
 
     int humedad_inicial;
     int SectoresInvernadero[5];
 
     /*Inicializamos el arreglo con valores iniciales de humedad aleatorios*/
     for(int i=0; i<5; i++){
-        humedad_inicial = rand() % 50 + 10;
+        humedad_inicial = rand() % 40 + 40;
         SectoresInvernadero[i] = humedad_inicial;
     }
     cout << "Inicial" << endl;
@@ -38,7 +39,7 @@ int main(){
         for(int i=0; i<5; i++){
             if(SectoresInvernadero[i]<=30){
                 srand(time(NULL));
-                SectoresInvernadero[i] += regar();
+                SectoresInvernadero[i] += regar(variable1);
             }
             else{
 
@@ -52,7 +53,7 @@ int main(){
         cout << "Secado" << endl;
         for(int i=0; i<5; i++){
             srand(time(NULL));
-            SectoresInvernadero[i] -= deshidratacion();
+            SectoresInvernadero[i] -= deshidratacion(variable1,variable2);
         }
         for(int i=0; i<5; i++){
             cout << "Sector[" << i << "] = " << SectoresInvernadero[i] << endl;
