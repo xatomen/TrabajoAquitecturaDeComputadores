@@ -3,10 +3,13 @@
 	variable2: .word
 	humedad_inicial: .word
 	SectoresInverdadero: .word 0,0,0,0,0
+	newline: .asciiz "\n"
 .text
 
 #AGREGAR SALTOS DE LINEA PARA CADA FOR!!!!!!!!!!!!!
 #O ALMENOS UNA SEPARACION!!!!!!!!!!!
+
+#EN V0 NO SE GUARDA EL RANDOM!!! VER EN DONDE SE GUARDA
 
 main:
 
@@ -45,6 +48,11 @@ main:
 		addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
 		j for2					#Saltamos a la etiqueta for1
 	endfor2:
+
+	#Salto de linea
+	li $v0, 4        # Carga el valor 4 en $v0, que corresponde a la llamada del sistema para imprimir una cadena
+	la $a0, newline  # Carga la dirección de la etiqueta "newline" en $a0
+	syscall          # Realiza la llamada del sistema
 
 	while:
 		#For utilizado para "regar" las plantas
@@ -88,6 +96,11 @@ main:
 			j for4					#Saltamos a la etiqueta for5
 		endfor4:
 
+		#Salto de linea
+		li $v0, 4        # Carga el valor 4 en $v0, que corresponde a la llamada del sistema para imprimir una cadena
+		la $a0, newline  # Carga la dirección de la etiqueta "newline" en $a0
+		syscall          # Realiza la llamada del sistema
+
 		#For utilizado para "deshidratar" las plantas
 		li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 		li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
@@ -123,6 +136,11 @@ main:
 			j for6					#Saltamos a la etiqueta for6
 		endfor6:
 
+		#Salto de linea
+		li $v0, 4        # Carga el valor 4 en $v0, que corresponde a la llamada del sistema para imprimir una cadena
+		la $a0, newline  # Carga la dirección de la etiqueta "newline" en $a0
+		syscall          # Realiza la llamada del sistema
+
 		j while		#Saltamos a la etiqueta while
 	endwhile:
 
@@ -133,40 +151,58 @@ syscall
 #QUITAR EL IMPRIMIR DENTRO DE LAS FUNCIONES AL FINAL!!!!!!!!!!!!!!!!
 
 regar:
-	#Establecemos la semilla
-	li $v0, 40
-	li $a0, 1
+	
+	#li $a1, 40			#Rango superior
+	#li $v0, 42			#Cargamos en $v0 el código para generar el número aleatorio con un límite superior
+	#syscall				#Obtenemos el número aleatorio y lo guardamos en el registro $v0
+    
+	# seed the random number generator
+
+	# get the time
+	li	$v0, 30		# get time in milliseconds (as a 64-bit value)
 	syscall
 
-	#Generamos número aleatorio
-	li $v0, 40          #Cargamos en $v0 el código para generar el número aleatorio
-	syscall             #Obtenemos el número aleatorio y lo guardamos en el registro $v0
-    
-    move $t4, $v0       #Guardamos el número aleatorio en el registro $t4
-    
-    move $a0, $t4       #Guardamos en el registro $a0 el valor a imprimir
-    li $v0, 1           #Cargamos en $v0 el código para imprimir
-    syscall             #Imprimimos
+	move	$t8, $a0	# save the lower 32-bits of time
+
+	# seed the random generator (just once)
+	li	$a0, 1		# random generator id (will be used later)
+	move 	$a1, $t8	# seed from time
+	li	$v0, 40		# seed random number generator syscall
+	syscall
+
+	li $a0, 1
+	li $a1, 30
+	li $v0, 42
+	syscall
+
+
+    move $t4, $a0       #Guardamos el número aleatorio en el registro $t4
 
     move $v0, $t4       #Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
 	addi $sp, $sp, 4	#Recuperamos el espacio utilizado en el stack
 	jr $ra				#Retornamos volviendo a la dirección de llamada a la función +4
 
 deshidratar:
-	#Establecemos la semilla
-	li $v0, 40
-	li $a0, 1
+	# seed the random number generator
+
+	# get the time
+	li	$v0, 30		# get time in milliseconds (as a 64-bit value)
 	syscall
 
-	#Generamos número aleatorio
-	li $v0, 40          #Cargamos en $v0 el código para generar el número aleatorio
-	syscall             #Obtenemos el número aleatorio y lo guardamos en el registro $v0
+	move	$t8, $a0	# save the lower 32-bits of time
 
-    move $t4, $v0       #Guardamos el número aleatorio en el registro $t4
-    
-    move $a0, $t4       #Guardamos en el registro $a0 el valor a imprimir
-    li $v0, 1           #Cargamos en $v0 el código para imprimir
-    syscall             #Imprimimos
+	# seed the random generator (just once)
+	li	$a0, 1		# random generator id (will be used later)
+	move 	$a1, $t8	# seed from time
+	li	$v0, 40		# seed random number generator syscall
+	syscall
+
+	li $a0, 1
+	li $a1, 30
+	li $v0, 42
+	syscall
+
+    move $t4, $a0       #Guardamos el número aleatorio en el registro $t4
     
     move $v0, $t4       #Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
 	addi $sp, $sp, 8	#Recuperamos el espacio utilizado en el stack
