@@ -5,13 +5,16 @@
 	SectoresInverdadero: .word 0,0,0,0,0
 .text
 
+#AGREGAR SALTOS DE LINEA PARA CADA FOR!!!!!!!!!!!!!
+#O ALMENOS UNA SEPARACION!!!!!!!!!!!
+
 main:
 
 	#Cargamos las variables en registros
-	move $s0, variable1
-	move $s1, variable2
-	move $s2, humedad_inicial
-	move $s3, SectoresInverdadero
+	lw $s0, variable1
+	lw $s1, variable2
+	lw $s2, humedad_inicial
+	la $s3, SectoresInverdadero     #Es load adress porque estamos cargando la dirección de memoria
 
 	#For utilizado para cargar los valores iniciales en el arreglo
 	li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
@@ -30,13 +33,17 @@ main:
 	li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 	li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
 	for2:
-		beq $t0, $t1, endfor1	#Si i es igual a n, salimos del for
+		beq $t0, $t1, endfor2	#Si i es igual a n, salimos del for
 		sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
 		add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
-		#Hacer el lw
-		#Imprimir en pantalla
+		
+        lw $t4, 0($t3)          #Guardamos en $t4 el valor que contiene la casilla del arreglo
+        move $a0, $t4           #Guardamos en el registro $a0 el valor a imprimir
+        li $v0, 1               #Cargamos en $v0 el código para imprimir
+        syscall                 #Imprimimos
+
 		addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
-		j for1					#Saltamos a la etiqueta for1
+		j for2					#Saltamos a la etiqueta for1
 	endfor2:
 
 	while:
@@ -44,13 +51,22 @@ main:
 		li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 		li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
 		for3:
+            beq $t0, $t1, endfor3	#Si i es igual a n, salimos del for
 			addi $sp, $sp, -4		#Hacemos "espacio" para el parámetro de la función regar
 			jal regar				#Invocamos la función regar
-			#Recuperar valor retornado
-			sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
-			add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
-			#Hacer la suma
-			#Insertar la suma en el campo
+			move $t5, $v0           #Recuperar valor retornado
+
+            sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
+            add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
+            lw $t4, 0($t3)          #Guardamos en $t4 el valor que contiene la casilla del arreglo
+            if1:
+                slti $t7, $t4, 30       #Si el valor de la casilla es menor que 30, entonces $t7 = 1
+                beq $t7, $zero, endif1  #Si la casilla es mayor que 30, entonces no realizamos el regado y saltamos a endif1
+
+                add $t6, $t4, $t5       #Guardamos en $t6 el valor de la suma entre el valor retornado al regar y el valor que contiene la casilla
+                sw $t6, 0($t3)          #Guardamos el valor de final de la casilla, dentro de la casilla correspondiente
+            endif1:
+                
 			addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
 			j for3					#Saltamos a la etiqueta for4
 		endfor3:
@@ -59,9 +75,15 @@ main:
 		li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 		li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
 		for4:
+            beq $t0, $t1, endfor4	#Si i es igual a n, salimos del for
 			sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
 			add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
-			#Imprimir
+
+            lw $t4, 0($t3)          #Guardamos en $t4 el valor que contiene la casilla del arreglo
+            move $a0, $t4           #Guardamos en el registro $a0 el valor a imprimir
+            li $v0, 1               #Cargamos en $v0 el código para imprimir
+            syscall                 #Imprimimos
+
 			addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
 			j for4					#Saltamos a la etiqueta for5
 		endfor4:
@@ -70,13 +92,16 @@ main:
 		li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 		li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
 		for5:
+            beq $t0, $t1, endfor5	#Si i es igual a n, salimos del for
 			addi $sp, $sp, -8		#Hacemos "espacio" para los parámetros de la función deshidratar
 			jal deshidratar			#Invocamos la función deshidratar
-			#Recuperar valor retornado
+			move $t5, $v0           #Recuperar valor retornado
+
 			sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
 			add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
-			#Hacer la resta
-			#Insertar la resta en el campo
+			sub $t6, $t4, $t5       #Guardamos en $t6 el valor de la resta entre el valor retornado al deshidratar y el valor que contiene la casilla
+            sw $t6, 0($t3)          #Guardamos el valor de final de la casilla, dentro de la casilla correspondiente
+
 			addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
 			j for5					#Saltamos a la etiqueta for5
 		endfor5:
@@ -85,13 +110,18 @@ main:
 		li $t0, 0	#Cargamos en el registro $t0 un "i" iniciado en 0
 		li $t1, 5	#Cargamos en el registro $t1 un "n" que indica el tamaño del arreglo, en este caso 5
 		for6:
+            beq $t0, $t1, endfor6	#Si i es igual a n, salimos del for
 			sll $t2, $t0, 2			#Calculamos el desplazamiento y lo guardamos en el registro $t2
 			add $t3, $t2, $s3		#En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
-			#Imprimir
+			
+            lw $t4, 0($t3)          #Guardamos en $t4 el valor que contiene la casilla del arreglo
+            move $a0, $t4           #Guardamos en el registro $a0 el valor a imprimir
+            li $v0, 1               #Cargamos en $v0 el código para imprimir
+            syscall                 #Imprimimos
+            
 			addi $t0, $t0, 1		#Incrementamos la "variable i" en 1
 			j for6					#Saltamos a la etiqueta for6
 		endfor6:
-
 
 		j while		#Saltamos a la etiqueta while
 	endwhile:
@@ -100,6 +130,7 @@ li $v0, 10	#Termnamos la ejecución del programa
 syscall
 
 #FALTA HACER QUE SEA EN UN RANGO!!!!!!!!!!!
+#QUITAR EL IMPRIMIR DENTRO DE LAS FUNCIONES AL FINAL!!!!!!!!!!!!!!!!
 
 regar:
 	#Establecemos la semilla
@@ -108,21 +139,35 @@ regar:
 	syscall
 
 	#Generamos número aleatorio
-	li $v0, 40
-	syscall
+	li $v0, 40          #Cargamos en $v0 el código para generar el número aleatorio
+	syscall             #Obtenemos el número aleatorio y lo guardamos en el registro $v0
+    
+    move $t4, $v0       #Guardamos el número aleatorio en el registro $t4
+    
+    move $a0, $t4       #Guardamos en el registro $a0 el valor a imprimir
+    li $v0, 1           #Cargamos en $v0 el código para imprimir
+    syscall             #Imprimimos
 
+    move $v0, $t4       #Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
 	addi $sp, $sp, 4	#Recuperamos el espacio utilizado en el stack
 	jr $ra				#Retornamos volviendo a la dirección de llamada a la función +4
 
-deshidratacion:
+deshidratar:
 	#Establecemos la semilla
 	li $v0, 40
 	li $a0, 1
 	syscall
 
 	#Generamos número aleatorio
-	li $v0, 40
-	syscall
+	li $v0, 40          #Cargamos en $v0 el código para generar el número aleatorio
+	syscall             #Obtenemos el número aleatorio y lo guardamos en el registro $v0
 
+    move $t4, $v0       #Guardamos el número aleatorio en el registro $t4
+    
+    move $a0, $t4       #Guardamos en el registro $a0 el valor a imprimir
+    li $v0, 1           #Cargamos en $v0 el código para imprimir
+    syscall             #Imprimimos
+    
+    move $v0, $t4       #Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
 	addi $sp, $sp, 8	#Recuperamos el espacio utilizado en el stack
 	jr $ra				#Retornamos volviendo a la dirección de llamada a la función +4
