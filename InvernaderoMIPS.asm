@@ -20,7 +20,7 @@ main:
 
 	# For utilizado para cargar los valores iniciales en el arreglo
 
-    # Imprimimos "deshidratar"
+    # Imprimimos "inicial"
     li $v0, 4           # Carga el valor 4 en $v0, que corresponde a la llamada del sistema para imprimir una cadena
     la $a0, txt_inicial # Carga la dirección de la etiqueta "txt_inicial" en $a0
     syscall             # Realiza la llamada del sistema
@@ -99,9 +99,9 @@ main:
 		for3:
             beq $t0, $t1, endfor3	# Si i es igual a n, salimos del for
 			addi $sp, $sp, -4		# Hacemos "espacio" para el parámetro de la función regar
+			sw $s0, 0($sp)
 			jal regar				# Invocamos la función regar
 			move $t5, $v0           # Recuperar valor retornado
-
             sll $t2, $t0, 2			# Calculamos el desplazamiento y lo guardamos en el registro $t2
             add $t3, $t2, $s3		# En el registro $t3 guardamos la dirección de memoria de la casilla a acceder
             lw $t4, 0($t3)          # Guardamos en $t4 el valor que contiene la casilla del arreglo
@@ -156,6 +156,8 @@ main:
 		for5:
             beq $t0, $t1, endfor5	# Si i es igual a n, salimos del for
 			addi $sp, $sp, -8		# Hacemos "espacio" para los parámetros de la función deshidratar
+			sw $s0, 0($sp)
+			sw $s1, 4($sp)
 			jal deshidratar			# Invocamos la función deshidratar
 			move $t5, $v0           # Recuperar valor retornado
 
@@ -239,6 +241,7 @@ regar:
     move $t4, $a0       # Guardamos el número aleatorio en el registro $t4
 
     move $v0, $t4       # Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
+	lw $s0, 0($sp)
 	addi $sp, $sp, 4	# Recuperamos el espacio utilizado en el stack
 	jr $ra				# Retornamos volviendo a la dirección de llamada a la función +4
 
@@ -272,5 +275,7 @@ deshidratar:
     move $t4, $a0       # Guardamos el número aleatorio en el registro $t4
     
     move $v0, $t4       # Guardamos en el registro $v0 el valor a retornar, es decir, el valor aleatorio generado
+	lw $s0, 0($sp)
+	lw $s1, 4($sp)
 	addi $sp, $sp, 8	# Recuperamos el espacio utilizado en el stack
 	jr $ra				# Retornamos volviendo a la dirección de llamada a la función +4
